@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2010-2013 the original author or authors. Licensed under the 
+	Apache License, Version 2.0 (the "License"); you may not use this file except 
+	in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 
+	Unless required by applicable law or agreed to in writing, software distributed 
+	under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES 
+	OR CONDITIONS OF ANY KIND, either express or implied. See the License for 
+	the specific language governing permissions and limitations under the License. -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iqb.consumer.mq.asset.allocation.dao.AssetAllocationDao">
+
+	<select id="testDb" resultType="map">
+		SELECT ID, CUSTOMER_CODE AS customerCode, CUSTOMER_NAME AS customerName FROM iqb_customer_base_info WHERE id = '51'
+	</select>
+	
+	<update id="updateRequestMoneyByAsset" parameterType="java.util.Map">
+		UPDATE 
+		  CF_REQUESTMONEY 
+		SET
+		  STATUS = 1
+		  <if test="responseId != null">
+		  	 , PUSHID = #{responseId}
+		  </if>
+		  <if test="createtime !=null and createtime != '' ">
+		  	 , createtime = #{createtime} 
+		  </if>
+		WHERE id = #{projectId}
+	</update>
+	
+	<update id="updateRequestMoneyByOrderId" parameterType="java.util.Map">
+		UPDATE 
+		  CF_REQUESTMONEY 
+		SET
+		  STATUS = 1
+		  <if test="responseId != null">
+		  	 , PUSHID = #{responseId}
+		  </if>
+		  <if test="createtime !=null and createtime != '' ">
+		  	 , createtime = #{createtime} 
+		  </if>
+		  <if test="sourcesFunding !=null and sourcesFunding != '' ">
+		  	 , SOURCESFUNDING = #{sourcesFunding} 
+		  </if>
+		WHERE id = (SELECT cf1.id FROM (SELECT MAX(id) AS id FROM cf_requestmoney WHERE ORDERID = #{orderId}) cf1)
+	</update>
+	
+	<delete id="deleteReqMoney">
+		DELETE FROM cf_requestmoney WHERE id = (SELECT cf1.id FROM (SELECT MAX(id) AS id FROM cf_requestmoney WHERE ORDERID = #{orderId}) cf1)
+	</delete>
+</mapper>

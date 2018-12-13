@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+    
+    <!-- 引入数据源配置 -->
+    <import resource="spring-jdbc-mysql-dbs.xml" />
+    
+    <bean id="common_consumer_subDbContextHolder" class="com.iqb.consumer.mq.common.db.SubDbContextHolder">   
+        <property name="SINGLE_DB_MAX_NUM" value="${common.consumer.db.max.num}" />
+        <property name="MASTER_DB_NUM" value="${common.consumer.master.num}" />
+        <property name="SLAVE_DB_NUM" value="${common.consumer.slave.num}" />
+        <property name="MASTER_DB_DBSTR" value="${common.consumer.master.dbstr}" />
+        <property name="SLAVE_DB_DBSTR" value="${common.consumer.slave.dbstr}" />   
+    </bean>
+    
+    <bean id="common_consumer_dataSource" class="com.iqb.consumer.mq.common.db.SubDbDataSource">
+        <property name="targetDataSources">
+            <map key-type="java.lang.String">
+                <entry key="common_consumer_iqb_master001" value-ref="common_consumer_iqb_master001"/>
+                <entry key="common_consumer_iqb_master001_slave001" value-ref="common_consumer_iqb_master001_slave001"/>
+                <entry key="common_consumer_iqb_master001_slave002" value-ref="common_consumer_iqb_master001_slave002"/>
+            </map>
+        </property>
+         <property name="defaultTargetDataSource" ref="common_consumer_iqb_master001" />
+        <property name="subDbContextHolder" ref="common_consumer_subDbContextHolder"/>
+    </bean>
+
+     <bean id="common_consumer_sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+	      <property name="dataSource" ref="common_consumer_dataSource" />
+     </bean>
+	
+	<!-- transaction manager, use JtaTransactionManager for global tx -->
+    <bean id="common_consumer_transactionManager4ms" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="common_consumer_dataSource" />
+    </bean>
+    <tx:annotation-driven transaction-manager="transactionManagerMyBatis" proxy-target-class="true"/>
+
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+	  <property name="basePackage" value="com.iqb.*" />
+	  <property name="sqlSessionFactoryBeanName" value="common_consumer_sqlSessionFactory"/>
+	</bean>
+	 
+    <tx:annotation-driven transaction-manager="common_consumer_transactionManager4ms"/>
+</beans>

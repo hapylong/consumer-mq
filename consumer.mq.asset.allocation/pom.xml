@@ -1,0 +1,150 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+ 	<modelVersion>4.0.0</modelVersion>
+  	<parent>
+		<groupId>com.iqb</groupId>
+		<artifactId>consumer-mq</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+	<artifactId>consumer.mq.asset.allocation</artifactId>
+	<name>consumer.mq.asset.allocation</name>
+	<url>http://maven.apache.org</url>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+	
+	<!-- 打包属性配置 -->
+	<profiles>
+		<!-- 开发默认激活 -->
+		<profile>
+			<id>dev</id>
+			<properties>
+				<env>dev</env>
+			</properties>
+<!-- 			<activation> -->
+<!-- 				<activeByDefault>true</activeByDefault> -->
+<!-- 			</activation> -->
+		</profile>
+		<!-- 测试环境 -->
+		<profile>
+			<id>test</id>
+			<properties>
+				<env>test</env>
+			</properties>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+		</profile>
+		<!-- uat环境 -->
+		<profile>
+			<id>uat</id>
+			<properties>
+				<env>uat</env>
+			</properties>
+<!-- 			<activation> -->
+<!-- 				<activeByDefault>true</activeByDefault> -->
+<!-- 			</activation> -->
+		</profile>
+		<!-- 线上环境 -->
+		<profile>
+			<id>pro</id>
+			<properties>
+				<env>pro</env>
+			</properties>
+<!-- 			<activation> -->
+<!-- 				<activeByDefault>true</activeByDefault> -->
+<!-- 			</activation> -->
+		</profile>
+	</profiles>
+	
+	<!-- 配置项目依赖关系 -->
+	<dependencies>
+		<dependency>
+			<groupId>com.iqb</groupId>
+			<artifactId>consumer.mq.common</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+	</dependencies>
+	
+	<!-- 打包相关配置 -->
+	<build>
+		<!-- 生成的jar包包名 -->
+		<finalName>${project.artifactId}</finalName>
+		<!-- 选中过滤的属性文件 -->
+		<filters>
+			<filter>src/main/filters/filter-${env}-env.properties</filter>
+		</filters>	
+		<!-- 设置需要被替换的文件组 -->
+		<resources>
+			<!-- 需要被替换的文件 -->
+			<resource>
+				<directory>src/main/resources</directory>
+				<!-- 是否使用参数值代替参数名，参数值取自properties元素或者文件里配置的属性，文件在filters中列出 -->
+				<filtering>true</filtering>
+			</resource>
+			<resource>
+				<directory>src/main/java</directory>
+				<!-- 包含的模式列表 -->
+				<includes>
+					<include>**/*.properties</include>
+					<include>**/*.xml</include>
+				</includes>
+				<!-- 是否替换资源中的文件属性 -->
+				<filtering>true</filtering>
+			</resource>
+		</resources>
+		
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+					<encoding>UTF-8</encoding>  
+				 </configuration>
+			</plugin>
+			<plugin>           
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<configuration>
+					<encoding>UTF-8</encoding>
+				</configuration>
+			</plugin>
+			
+			<!-- 运行mvn clean package 即可调用此处进行打包 -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<addClasspath>true</addClasspath>
+							<classpathPrefix>lib/</classpathPrefix>
+							<mainClass>com.iqb.consumer.mq.asset.allocation.Launcher</mainClass>    
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
+			
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<!-- 将项目依赖从本地maven仓库复制到某个特定的文件夹下面 -->
+					<execution>
+						<id>copy</id>
+						<phase>install</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+						   <outputDirectory>${project.build.directory}/lib</outputDirectory>  
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>			
+		</plugins>
+	</build>
+</project>
